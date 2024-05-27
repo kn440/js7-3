@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Отзывы о продуктах</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+    }
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    h1, h2 {
+        text-align: center;
+    }
+    .product-list {
+        list-style-type: none;
+        padding: 0;
+    }
+    .review-list {
+        list-style-type: none;
+        padding-left: 20px;
+    }
+    .review-item {
+        margin-bottom: 10px;
+    }
+    .delete-btn {
+        background-color: #ff3333;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Отзывы о продуктах</h1>
+    <div id="add-review">
+        <h2>Добавить отзыв</h2>
+        <label for="product-name">Название продукта:</label><br>
+        <input type="text" id="product-name"><br>
+        <label for="review-text">Отзыв:</label><br>
+        <textarea id="review-text" rows="4" cols="50"></textarea><br>
+        <button onclick="addReview()">Добавить отзыв</button>
+    </div>
+    <div id="view-reviews">
+        <h2>Просмотр отзывов</h2>
+        <ul id="product-list" class="product-list">
+         
+        </ul>
+    </div>
+</div>
+
+<script>
+   
+    function addReview() {
+        var productName = document.getElementById("product-name").value;
+        var reviewText = document.getElementById("review-text").value;
+
+        if (productName && reviewText) {
+            var review = {
+                productName: productName,
+                reviewText: reviewText
+            };
+
+        
+            var reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+            reviews.push(review);
+
+  
+            localStorage.setItem("reviews", JSON.stringify(reviews));
+
+   
+            document.getElementById("product-name").value = "";
+            document.getElementById("review-text").value = "";
+
+  
+            loadProducts();
+        } else {
+            alert("Пожалуйста, заполните все поля.");
+        }
+    }
+
+
+    function loadProducts() {
+        var productList = document.getElementById("product-list");
+        productList.innerHTML = ""; 
+
+        var reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+
+       
+        var products = [];
+        reviews.forEach(function(review) {
+            if (!products.includes(review.productName)) {
+                products.push(review.productName);
+            }
+        });
+
+     
+        products.forEach(function(product) {
+            var listItem = document.createElement("li");
+            listItem.textContent = product;
+            listItem.addEventListener("click", function() {
+                showReviews(product);
+            });
+            productList.appendChild(listItem);
+        });
+    }
+
+  
+    function showReviews(product) {
+        var reviewList = document.createElement("ul");
+        reviewList.classList.add("review-list");
+
+        var reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+
+
+        var productReviews = reviews.filter(function(review) {
+            return review.productName === product;
+        });
+
+   
+        productReviews.forEach(function(review) {
+            var listItem = document.createElement("li");
+            listItem.classList.add("review-item");
+            listItem.textContent = review.reviewText;
+
+       
+            var deleteButton = document.createElement("button");
+            deleteButton.textContent = "Удалить";
+            deleteButton.classList.add("delete-btn");
+            deleteButton.addEventListener("click", function() {
+                deleteReview(product, review.reviewText);
+            });
+
+            listItem.appendChild(deleteButton);
+            reviewList.appendChild(listItem);
+        });
+
+  
+        var viewReviewsDiv = document.getElementById("view-reviews");
+        viewReviewsDiv.innerHTML = "";
+        viewReviewsDiv.appendChild(reviewList);
+    }
+
+
+    function deleteReview(product, reviewText) {
+        var reviews = JSON.parse(localStorage.getItem("reviews")) || [];
+
+  
+        var updatedReviews = reviews.filter(function(review) {
+            return !(review.productName === product && review.reviewText === reviewText);
+        });
+
+ 
+        localStorage.setItem("reviews", JSON.stringify(updatedReviews));
+
+      
+        loadProducts();
+    }
+
+    loadProducts();
+</script>
+</body>
+</html>
